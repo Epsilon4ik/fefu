@@ -11,6 +11,8 @@ int main()
     for (int i = 0; i < 10; i++)
         list1.push_front(i);//в начало
 
+    list1.Print();
+
     if (list1.empty())//проверка списка на пустоту
         cout << "List is empty" << endl;
     else cout << "List is not empty" << endl;
@@ -18,11 +20,9 @@ int main()
     list1.Insert(1, 10);//добавляем десятку по индексу 1
 
     list1.Print();
-
+    
+    cout << "del 5th elem" << endl;
     list1.erase(5);
-
-    list1.pop_front();
-    list1.pop_back();
 
     list1.Print();
 

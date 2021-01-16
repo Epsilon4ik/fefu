@@ -1,54 +1,10 @@
 ﻿#include <iostream>
+#include "List.h"
 using namespace std;
-
-struct Node
-{
-    int data;
-    Node *next, *prev;
-};
-
-class List
-{
-    Node *Head, *Tail;
-    int size;
-
-public:
-    // Конструктор
-    List();
-    // Деструктор
-    ~List();
-
-    int GetSize();//количество элементов в списке
-
-    int find(int value);//найти звено по значению
-
-    void destroy();// Удалить весь список
-    
-    void erase(int index);// Удаление элемента по индексу
-    void eraseNext(Node* node);// Удаление элемента по индексу
-    void erasePrev(Node* node);// Удаление элемента по индексу
-
-    void Insert(int pos,int data); // Вставка элемента в произвольное место
-    void insert_after(Node* node,int value); // Вставка после
-    void insert_before(Node* node, int value); // Вставка до
-
-    void push_back(int data);// Добавление в конец списка
-    void push_front(int data);// Добавление в начало списка
-
-    void pop_front();//удаление из начала
-    void pop_back();//удаление из конца
-    void remove(int value);//удаление по значению
-
-    void Print();// Печать всего списка
-
-    bool empty();//проверка на то,пустой ли список
-
-    void sort();
-};
 
 List::List()
 {
-    Head = Tail = NULL;
+    Head = Tail = nullptr;
     size = 0;
 }
 
@@ -59,40 +15,66 @@ List::~List()
 
 void List::push_front(int data)
 {
-    Node* temp = new Node;
+    Node* temp = createNewNode(data);
 
     temp->prev = 0;
-    temp->data = data;
     temp->next = Head;
 
-    if (Head != 0)
+    if (Head != nullptr)
         Head->prev = temp;
 
     if (size == 0)
         Head = Tail = temp;
     else
         Head = temp;
-
-    size++;
 }
 
 void List::push_back(int data)
 {
-    Node* temp = new Node;
+    Node* temp = createNewNode(data);
 
     temp->next = 0;
-    temp->data = data;
     temp->prev = Tail;
 
-    if (Tail != 0)
+    if (Tail != nullptr)
         Tail->next = temp;
 
     if (size == 0)
         Head = Tail = temp;
     else
         Tail = temp;
+}
+
+void List::setLinks(Node* prevIns,Node* nextIns,Node* Ins,Node* temp)
+{
+    if (prevIns != nullptr)
+    {
+        if (prevIns != 0 && size != 1)
+            prevIns->next = temp;
+
+        temp->next = Ins;
+        temp->prev = prevIns;
+        Ins->prev = temp;
+    }
+    if (nextIns != nullptr)
+    {
+        if (nextIns != 0 && size != 1)
+            nextIns->prev = temp;
+
+        temp->next = nextIns;
+        temp->prev = Ins;
+        Ins->next = temp;
+    }
+}
+
+Node* List::createNewNode(int data)
+{
+    // Создаем новый элемент
+    Node* temp = new Node;
+    temp->data = data;
 
     size++;
+    return temp;
 }
 
 void List::Insert(int index,int data)
@@ -118,22 +100,11 @@ void List::Insert(int index,int data)
         i++;
     }
 
-    // Доходим до элемента,который предшествует
-    Node* PrevIns = Ins->prev;
+    Node* PrevIns = Ins->prev;// Доходим до элемента,который предшествует
 
-    // Создаем новый элемент
-    Node* temp = new Node;
-    temp->data = data;
+    Node* temp = createNewNode(data);//создаем новый элемент
 
-    // настройка связей
-    if (PrevIns != 0 && size != 1)
-        PrevIns->next = temp;
-
-    temp->next = Ins;
-    temp->prev = PrevIns;
-    Ins->prev = temp;
-
-    size++;
+    setLinks(PrevIns, nullptr, Ins, temp);//настраиваем связи
 }
 
 void List::insert_after(Node* node, int value)
@@ -141,17 +112,9 @@ void List::insert_after(Node* node, int value)
     Node* Ins = node->next;
     Node* PrevIns = node;
 
-    Node* temp = new Node;
-    temp->data = value;
+    Node* temp = createNewNode(value);//создаем новый элемент
 
-    if (PrevIns != 0 && size != 1)
-        PrevIns->next = temp;
-
-    temp->next = Ins;
-    temp->prev = PrevIns;
-    Ins->prev = temp;
-
-    size++;
+    setLinks(PrevIns, nullptr, Ins, temp);//настраиваем связи
 }
 
 void List::insert_before(Node* node, int value)
@@ -159,26 +122,18 @@ void List::insert_before(Node* node, int value)
     Node* Ins = node->prev;
     Node* NextIns = node;
 
-    Node* temp = new Node;
-    temp->data = value;
+    Node* temp = createNewNode(value);
 
-    if (NextIns != 0 && size != 1)
-        NextIns->prev = temp;
-
-    temp->next = NextIns;
-    temp->prev = Ins;
-    Ins->next = temp;
-
-    size++;
+    setLinks(nullptr, NextIns, Ins, temp);//настраиваем связи
 }
 
-void List::erase(int pos)
+void List::erase(int index)
 {
-    int i = 1;
+    int i = 0;
 
     Node* Del = Head;
 
-    while (i < pos)
+    while (i < index)
     {
         Del = Del->next;
         i++;
@@ -193,9 +148,9 @@ void List::erase(int pos)
     if (AfterDel != 0 && size != 1)
         AfterDel->prev = PrevDel;
 
-    if (pos == 1)
+    if (index == 0)
         Head = AfterDel;
-    if (pos == size)
+    if (index == size-1)
         Tail = PrevDel;
 
     delete Del;
@@ -229,12 +184,12 @@ void List::erasePrev(Node* node)
 
 void List::pop_front()
 {
-    erase(1);
+    erase(0);
 }
 
 void List::pop_back()
 {
-    erase(size);
+    erase(size-1);
 }
 
 void List::remove(int value)
@@ -290,7 +245,7 @@ void List::Print()
 void List::destroy()
 {
     while (size != 0)
-        erase(1);
+        erase(0);
 }
 
 int List::GetSize()
